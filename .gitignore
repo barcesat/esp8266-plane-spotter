@@ -1,0 +1,17 @@
+# Local secrets / per-device config (copy config.example.h -> config.h)
+firmware/plane_spotter/config.h
+
+# Arduino / PlatformIO build artifacts
+build/
+.build/
+*.bin
+*.elf
+*.hex
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Editor / OS noise
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,37 @@
+/*
+ * Configuration template.
+ *
+ *   1. Copy this file to "config.h" (same folder).
+ *   2. Fill in your WiFi credentials and home coordinates.
+ *   3. config.h is git-ignored so your secrets never get committed.
+ */
+#pragma once
+
+// ---- WiFi ----------------------------------------------------------------
+#define WIFI_SSID  "YOUR_WIFI_NAME"
+#define WIFI_PASS  "YOUR_WIFI_PASSWORD"
+
+// ---- Home location -------------------------------------------------------
+// Default: centre of Pinerolo (TO), Italy.
+#define HOME_LAT   44.8848
+#define HOME_LON   7.3306
+
+// Half-size of the search box in degrees (~0.6 deg latitude is ~67 km).
+// Smaller = less data to parse on the ESP8266, larger = wider sky coverage.
+#define SEARCH_RADIUS_DEG  0.6
+
+// How often to poll OpenSky, in milliseconds (be gentle with the free API).
+#define UPDATE_INTERVAL_MS  30000
+
+// ---- OpenSky account (optional) ------------------------------------------
+// Leave both empty for anonymous access (lower rate limit). A free account
+// at https://opensky-network.org/ gives you many more daily requests.
+#define OPENSKY_USER  ""
+#define OPENSKY_PASS  ""
+
+// ---- OLED wiring (hardware SPI) ------------------------------------------
+// SCK -> GPIO14 (D5) and SDA/MOSI -> GPIO13 (D7) are fixed by HW SPI.
+// These three are configurable:
+#define PIN_OLED_RST  16   // D0
+#define PIN_OLED_DC    4   // D2
+#define PIN_OLED_CS    5   // D1
