@@ -1,9 +1,12 @@
 # ✈️ ESP8266 Plane Spotter
 
-A tiny desktop gadget that shows the **aircraft currently flying closest to your
-home** on a 0.96" OLED, plus a rotation of nerdy live statistics. Real ADS-B
-data comes from the free [OpenSky Network](https://opensky-network.org/) REST
-API over WiFi.
+A desktop gadget with a **tactical / military-style** interface that shows the
+**aircraft currently flying closest to your home** on a 0.96" OLED, plus live
+weather, an NTP clock and a bunch of nerdy stats. Live ADS-B data comes from
+the [OpenSky Network](https://opensky-network.org/) API; weather from
+[Open-Meteo](https://open-meteo.com/); routes/airlines from
+[hexdb.io](https://hexdb.io/). 3D-printable desktop case included in
+[`hardware/`](hardware/).
 
 Default home location is the **centre of Pinerolo (TO), Italy** — change it in
 `config.h` to point at your own roof.
@@ -12,28 +15,31 @@ Default home location is the **centre of Pinerolo (TO), Italy** — change it in
 
 ## What it shows
 
-The display cycles through four screens every 7 seconds (page dots in the
-top-right corner show which one you're on):
+Every screen has a tactical header: title + page index on the left, a live NTP
+clock on the right. It cycles through five screens every 7 seconds:
 
-1. **Nearest aircraft** — callsign, a type icon, distance + compass direction
-   from home, altitude (metres and flight level), an arrow pointing in the
-   aircraft's direction of travel, ground speed, and a vertical altitude gauge.
-2. **Flight details** — ICAO24 hex address, country of registration, true
-   track, vertical rate (climb/descent), and live lat/lon.
-3. **Radar** — a North-up PPI radar with your home at the centre, range rings
-   (outer ring = 120 km), a rotating sweep, and a blip for every aircraft in
-   view. The nearest is highlighted and detailed in the side panel (type icon,
-   callsign, distance, flight level, contact count). A small tick outside the
-   ring marks the direction the wall faces (`WALL_HEADING_DEG`).
-4. **Statistics** — uptime, aircraft in view (current & session max), closest
-   approach this session, OpenSky request ok/error counters, WiFi signal bars +
-   RSSI and free heap.
+1. **TARGET** — nearest aircraft: callsign, a type icon, distance + compass
+   bearing, altitude (m and flight level), a heading arrow, ground speed and a
+   vertical altitude gauge.
+2. **INTEL** — callsign, **airline**, **departure → arrival** route and an
+   **ETA** estimate (looked up from hexdb.io), plus ICAO24 and heading.
+3. **RADAR** — North-up PPI: home at the centre, range rings (outer = 120 km),
+   a rotating sweep and a blip per aircraft. Blips are **dead-reckoned** from
+   track + speed so they creep in real time between refreshes, with radar
+   **persistence** (bright as the sweep passes, then a faint dot). The nearest
+   is boxed; a tick marks the wall direction. Side panel: type, callsign, RNG,
+   BRG, contact count.
+4. **WX** — current weather (temperature, condition icon, humidity, wind) and a
+   minimal next-hours forecast strip.
+5. **SYSTEM** — big `HH:MM:SS` clock with live milliseconds, date, uptime,
+   target count, WiFi signal bars, free RAM and request counters.
 
-The **type icon** comes from the OpenSky emitter category (requested with
-`extended=1`): airliner, light/small plane, jet, helicopter, glider, balloon,
-drone, or a generic plane when the category is unknown.
+The **type icon** uses the OpenSky emitter category (`extended=1`) when present;
+since that is often unset, the firmware otherwise estimates the type from
+altitude + speed and flags it with a leading `~`.
 
-Data refreshes every 60 seconds (configurable — see the rate-limit note below).
+Aircraft data refreshes every 60 s, weather every 10 min (both configurable —
+see the rate-limit note below).
 
 ---
 
@@ -62,6 +68,19 @@ configurable in `config.h`.
 > The default pins avoid the ESP8266 boot-strapping pins (GPIO0/2/15), so the
 > board flashes and boots reliably.
 
+### 3D-printed case
+
+A simple two-part desktop case lives in [`hardware/`](hardware/):
+
+| File | Part |
+|------|------|
+| [`hardware/Radar1.stl`](hardware/Radar1.stl) | Case part 1 |
+| [`hardware/radar2.stl`](hardware/radar2.stl) | Case part 2 |
+
+Print both, slot the board + OLED inside, and stand it on your desk. It is
+designed to hang on a wall facing a known compass heading — set that heading in
+`WALL_HEADING_DEG` so the radar's wall tick lines up.
+
 ```
         ESP8266 (NodeMCU)                OLED SSD1306 SPI
       ┌───────────────────┐            ┌──────────────────┐
@@ -84,7 +103,7 @@ configurable in `config.h`.
 1. Install the **ESP8266 board package** (Boards Manager → "esp8266").
 2. Install libraries via **Library Manager**:
    - `U8g2` by olikraus
-   - `ArduinoJson` by Benoit Blanchon (v6.x)
+   - `ArduinoJson` by Benoit Blanchon (v7.x)
 3. Copy `firmware/plane_spotter/config.example.h` → `config.h` and fill in your
    WiFi credentials (and your coordinates, if not Pinerolo).
 4. Open `firmware/plane_spotter/plane_spotter.ino`, select your board, and
@@ -116,7 +135,21 @@ private). Key options:
 | `SEARCH_RADIUS_DEG` | Half-size of the sky box to query (~1.0° ≈ 111 km) |
 | `UPDATE_INTERVAL_MS` | Poll period for OpenSky |
 | `WALL_HEADING_DEG` | Compass heading the wall/device faces (used by the radar wall tick) |
+| `TIMEZONE` | POSIX timezone string for the NTP clock (default: Europe/Rome) |
+| `WEATHER_INTERVAL_MS` | Weather refresh period (default: 10 min) |
 | `OPENSKY_CLIENT_ID` / `OPENSKY_CLIENT_SECRET` | Optional OpenSky OAuth2 client for a much bigger budget |
+
+### Data sources
+
+| What | Service | Key needed |
+|------|---------|------------|
+| Aircraft (ADS-B) | OpenSky Network | optional (OAuth2 client → bigger quota) |
+| Weather + forecast | Open-Meteo | no |
+| Airline / route / ETA | hexdb.io | no |
+| Clock | NTP (`pool.ntp.org`) | no |
+
+> Route/ETA come from a community database, so they aren't available for every
+> flight — `INTEL` shows `unknown` / `ETA --` when a route isn't found.
 
 ---
 
