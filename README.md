@@ -144,6 +144,7 @@ private). Key options:
 | `HOME_LAT` / `HOME_LON` | Your home coordinates (default: Pinerolo) |
 | `SEARCH_RADIUS_DEG` | Half-size of the sky box to query (~1.0° ≈ 111 km) |
 | `UPDATE_INTERVAL_MS` | Poll period for OpenSky |
+| `INCLUDE_ON_GROUND` | Include parked/taxiing aircraft; set `false` near airports |
 | `WALL_HEADING_DEG` | Compass heading the wall/device faces (used by the radar wall tick) |
 | `TIMEZONE` | POSIX timezone string for the NTP clock (default: Europe/Rome) |
 | `WEATHER_INTERVAL_MS` | Weather refresh period (default: 10 min) |

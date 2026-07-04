@@ -26,6 +26,11 @@
 // continuous use set OPENSKY_USER/PASS below (a free account = far more calls).
 #define UPDATE_INTERVAL_MS  60000
 
+// Include aircraft that OpenSky reports as on-ground (parked/taxiing).
+// Set to false if you live near an airport and do not want parked planes
+// to win "nearest aircraft" or appear as radar contacts.
+#define INCLUDE_ON_GROUND  false
+
 // Compass heading (deg, 0=N 90=E 180=S 270=W) that the wall / device faces.
 // Used by the radar screen to mark the wall direction.
 #define WALL_HEADING_DEG  194

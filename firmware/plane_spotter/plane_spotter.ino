@@ -37,6 +37,10 @@
 
 #include "config.h"
 
+#ifndef INCLUDE_ON_GROUND
+#define INCLUDE_ON_GROUND true
+#endif
+
 // ---------------------------------------------------------------------------
 // Display: SSD1306 128x64, 4-wire hardware SPI.
 // HW SPI uses the fixed ESP8266 pins SCLK=GPIO14 (D5) and MOSI=GPIO13 (D7);
@@ -325,6 +329,9 @@ bool fetchAircraft() {
 
   for (JsonArray s : states) {
     if (s.isNull() || s[5].isNull() || s[6].isNull()) continue;
+    bool onGround = s[8] | false;
+    if (onGround && !INCLUDE_ON_GROUND) continue;
+
     double lon = s[5].as<double>();
     double lat = s[6].as<double>();
     double d   = haversineKm(HOME_LAT, HOME_LON, lat, lon);
@@ -335,7 +342,7 @@ bool fetchAircraft() {
       blips[blipCount].lat     = lat;
       blips[blipCount].lon     = lon;
       blips[blipCount].track   = s[10] | 0.0f;
-      blips[blipCount].speedMs = (s[8] | false) ? 0.0f : (s[9] | 0.0f);
+      blips[blipCount].speedMs = onGround ? 0.0f : (s[9] | 0.0f);
       blipCount++;
     }
 
@@ -344,7 +351,7 @@ bool fetchAircraft() {
       best.lat        = lat;
       best.lon        = lon;
       best.bearingDeg = brg;
-      best.onGround   = s[8] | false;
+      best.onGround   = onGround;
       best.category   = s[17] | 0;
 
       // geo altitude (13) preferred, fall back to barometric (7)
