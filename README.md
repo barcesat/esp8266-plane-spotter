@@ -89,23 +89,8 @@ I2C pins; both are configurable in `config.h`.
 > `0x3C` (U8g2's default); if yours is `0x3D`, add
 > `u8g2.setI2CAddress(0x3D * 2);` before `u8g2.begin()`.
 
-### 3D-printed case
 
-A simple two-part desktop case lives in [`hardware/`](hardware/):
-
-| File | Part |
-|------|------|
-| [`hardware/Radar1.stl`](hardware/Radar1.stl) | Case part 1 |
-| [`hardware/radar2.stl`](hardware/radar2.stl) | Case part 2 |
-
-<p align="center">
-  <img src="docs/images/case-render.png" width="460" alt="CAD render of the 3D-printed case">
-</p>
-
-Print both, slot the board + OLED inside, and stand it on your desk. It is
-designed to hang on a wall facing a known compass heading — set that heading in
-`WALL_HEADING_DEG` so the radar's wall tick lines up.
-
+**Wiring Schema**
 ```
         ESP8266 (NodeMCU)                OLED SSD1306 SPI
       ┌───────────────────┐            ┌──────────────────┐
@@ -126,6 +111,23 @@ designed to hang on a wall facing a known compass heading — set that heading i
       │ D2/GPIO4  ────────┼────────────┤ SDA              │
       └───────────────────┘            └──────────────────┘
 ```
+
+### 3D-printed case
+
+A simple two-part desktop case lives in [`hardware/`](hardware/):
+
+| File | Part |
+|------|------|
+| [`hardware/Radar1.stl`](hardware/Radar1.stl) | Case part 1 |
+| [`hardware/radar2.stl`](hardware/radar2.stl) | Case part 2 |
+
+<p align="center">
+  <img src="docs/images/case-render.png" width="460" alt="CAD render of the 3D-printed case">
+</p>
+
+Print both, slot the board + OLED inside, and stand it on your desk. It is
+designed to hang on a wall facing a known compass heading — set that heading in
+`WALL_HEADING_DEG` so the radar's wall tick lines up.
 
 ---
 
