@@ -54,25 +54,24 @@ see the rate-limit note below).
 | Part | Notes |
 |------|-------|
 | ESP8266 board | NodeMCU v2/v3, Wemos D1 mini, or similar |
-| 0.96" OLED, **SSD1306**, **4-wire SPI** | 7-pin module: `GND VCC SCK SDA RES DC CS` |
+| 0.96" OLED, **SSD1306**, **I2C** | 4-pin module: `GND VCC SCL SDA` |
 
 ### Wiring
 
-Hardware SPI is used, so `SCK` and `SDA` are fixed; the other three pins are
-configurable in `config.h`.
+Hardware I2C is used on the ESP8266's standard I2C pins; both are configurable
+in `config.h` (`PIN_OLED_SCL` / `PIN_OLED_SDA`).
 
 | OLED pin | ESP8266 (NodeMCU label / GPIO) | Role |
 |----------|-------------------------------|------|
 | GND | GND | Ground |
 | VCC | 3V3 | Power |
-| SCK | **D5 / GPIO14** | HW SPI clock (fixed) |
-| SDA | **D7 / GPIO13** | HW SPI data / MOSI (fixed) |
-| RES | D0 / GPIO16 | Reset |
-| DC  | D2 / GPIO4  | Data/Command |
-| CS  | D1 / GPIO5  | Chip select |
+| SCL | **D1 / GPIO5** | I2C clock |
+| SDA | **D2 / GPIO4** | I2C data |
 
 > The default pins avoid the ESP8266 boot-strapping pins (GPIO0/2/15), so the
-> board flashes and boots reliably.
+> board flashes and boots reliably. Most SSD1306 modules use I2C address
+> `0x3C` (U8g2's default); if yours is `0x3D`, add
+> `u8g2.setI2CAddress(0x3D * 2);` before `u8g2.begin()`.
 
 ### 3D-printed case
 
@@ -92,15 +91,12 @@ designed to hang on a wall facing a known compass heading — set that heading i
 `WALL_HEADING_DEG` so the radar's wall tick lines up.
 
 ```
-        ESP8266 (NodeMCU)                OLED SSD1306 SPI
+        ESP8266 (NodeMCU)                OLED SSD1306 I2C
       ┌───────────────────┐            ┌──────────────────┐
       │ 3V3 ──────────────┼────────────┤ VCC              │
       │ GND ──────────────┼────────────┤ GND              │
-      │ D5/GPIO14 ────────┼────────────┤ SCK              │
-      │ D7/GPIO13 ────────┼────────────┤ SDA (MOSI)       │
-      │ D0/GPIO16 ────────┼────────────┤ RES              │
-      │ D2/GPIO4  ────────┼────────────┤ DC               │
-      │ D1/GPIO5  ────────┼────────────┤ CS               │
+      │ D1/GPIO5  ────────┼────────────┤ SCL              │
+      │ D2/GPIO4  ────────┼────────────┤ SDA              │
       └───────────────────┘            └──────────────────┘
 ```
 

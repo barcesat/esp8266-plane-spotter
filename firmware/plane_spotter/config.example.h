@@ -51,9 +51,8 @@
 #define OPENSKY_CLIENT_ID      ""
 #define OPENSKY_CLIENT_SECRET  ""
 
-// ---- OLED wiring (hardware SPI) ------------------------------------------
-// SCK -> GPIO14 (D5) and SDA/MOSI -> GPIO13 (D7) are fixed by HW SPI.
-// These three are configurable:
-#define PIN_OLED_RST  16   // D0
-#define PIN_OLED_DC    4   // D2
-#define PIN_OLED_CS    5   // D1
+// ---- OLED wiring (hardware I2C) -------------------------------------------
+// Defaults are the ESP8266 standard I2C pins. The module's 4 pins:
+//   GND -> GND, VCC -> 3V3, SCL -> D1, SDA -> D2.
+#define PIN_OLED_SCL  5    // D1
+#define PIN_OLED_SDA  4    // D2
