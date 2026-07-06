@@ -2,18 +2,24 @@
  * ESP8266 Plane Spotter
  * --------------------------------------------------------------------------
  * Shows the aircraft currently flying closest to your home on a 0.96" SSD1306
- * I2C OLED, plus a bunch of nerdy statistics. Live ADS-B data is pulled from
+ * OLED, plus a bunch of nerdy statistics. Live ADS-B data is pulled from
  * the free OpenSky Network REST API.
  *
  * Board   : any ESP8266 (NodeMCU v2/v3, Wemos D1 mini, ...)
- * Display : 0.96" OLED I2C, SSD1306 128x64 (4 pins: GND, VCC, SCL, SDA)
+ * Display : 0.96" OLED, SSD1306 128x64, either
+ *           - 4-wire SPI (7 pins: GND, VCC, SCK, SDA, RES, DC, CS), or
+ *           - I2C (4 pins: GND, VCC, SCL, SDA)
+ *           Pick with OLED_USE_I2C in config.h.
  *
- * Wiring (default, see README for the full table):
- *   OLED      ESP8266 (NodeMCU label / GPIO)
- *   GND  -->  GND
- *   VCC  -->  3V3
- *   SCL  -->  D1  / GPIO5
- *   SDA  -->  D2  / GPIO4
+ * Wiring (defaults, see README for the full tables):
+ *   SPI OLED  ESP8266                    I2C OLED  ESP8266
+ *   GND  -->  GND                        GND  -->  GND
+ *   VCC  -->  3V3                        VCC  -->  3V3
+ *   SCK  -->  D5 / GPIO14 (HW, fixed)    SCL  -->  D1 / GPIO5
+ *   SDA  -->  D7 / GPIO13 (HW, fixed)    SDA  -->  D2 / GPIO4
+ *   RES  -->  D0 / GPIO16
+ *   DC   -->  D2 / GPIO4
+ *   CS   -->  D1 / GPIO5
  *
  * Libraries (install from the Arduino Library Manager):
  *   - U8g2        by olikraus
@@ -38,14 +44,27 @@
 #endif
 
 // ---------------------------------------------------------------------------
-// Display: SSD1306 128x64, hardware I2C.
-// SCL/SDA pins come from config.h (defaults: SCL=GPIO5/D1, SDA=GPIO4/D2, the
-// ESP8266 standard I2C pins). Most modules answer at address 0x3C, U8g2's
-// default; if yours is 0x3D, add u8g2.setI2CAddress(0x3D * 2) before begin().
+// Display: SSD1306 128x64, 4-wire hardware SPI or hardware I2C, selected by
+// OLED_USE_I2C in config.h.
+// SPI: HW SPI uses the fixed ESP8266 pins SCLK=GPIO14 (D5) and MOSI=GPIO13
+//   (D7); only CS / DC / RESET are configurable.
+// I2C: SCL/SDA pins come from config.h (defaults: SCL=GPIO5/D1, SDA=GPIO4/D2,
+//   the ESP8266 standard I2C pins). Most modules answer at address 0x3C,
+//   U8g2's default; if yours is 0x3D, add u8g2.setI2CAddress(0x3D * 2)
+//   before begin().
 // ---------------------------------------------------------------------------
+#ifndef OLED_USE_I2C
+#define OLED_USE_I2C false   // config.h files from before this switch are SPI
+#endif
+
+#if OLED_USE_I2C
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE,
                                          /* clock=*/ PIN_OLED_SCL,
                                          /* data=*/  PIN_OLED_SDA);
+#else
+U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, PIN_OLED_CS, PIN_OLED_DC,
+                                            PIN_OLED_RST);
+#endif
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -1072,9 +1091,11 @@ void render() {
 // ---------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
+#if OLED_USE_I2C
   u8g2.setBusClock(400000);   // 400 kHz I2C: a full frame in ~25 ms, needed
                               // for the ~30 fps radar sweep (100 kHz manages
                               // only ~10 fps). SSD1306 modules handle it fine.
+#endif
   u8g2.begin();
   u8g2.setContrast(180);
 
